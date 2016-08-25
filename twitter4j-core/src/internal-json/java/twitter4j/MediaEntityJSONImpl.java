@@ -33,31 +33,31 @@ public class MediaEntityJSONImpl extends EntityIndex implements MediaEntity {
     protected Map<Integer, MediaEntity.Size> sizes;
     protected String type;
 
-
     MediaEntityJSONImpl(JSONObject json) throws TwitterException {
         try {
-            JSONArray indicesArray = json.getJSONArray("indices");
-            setStart(indicesArray.getInt(0));
-            setEnd(indicesArray.getInt(1));
-            this.id = ParseUtil.getLong("id", json);
+            if (json.has("indices")) {
+                JSONArray indicesArray = json.getJSONArray("indices");
+                setStart(indicesArray.getInt(0));
+                setEnd(indicesArray.getInt(1));
+                this.id = ParseUtil.getLong("id", json);
 
-            this.url = json.getString("url");
-            this.expandedURL = json.getString("expanded_url");
-            this.mediaURL = json.getString("media_url");
-            this.mediaURLHttps = json.getString("media_url_https");
-            this.displayURL = json.getString("display_url");
+                this.url = json.getString("url");
+                this.expandedURL = json.getString("expanded_url");
+                this.mediaURL = json.getString("media_url");
+                this.mediaURLHttps = json.getString("media_url_https");
+                this.displayURL = json.getString("display_url");
 
-            JSONObject sizes = json.getJSONObject("sizes");
-            this.sizes = new HashMap<Integer, MediaEntity.Size>(4);
-            // thumbworkarounding API side issue
-            addMediaEntitySizeIfNotNull(this.sizes, sizes, MediaEntity.Size.LARGE, "large");
-            addMediaEntitySizeIfNotNull(this.sizes, sizes, MediaEntity.Size.MEDIUM, "medium");
-            addMediaEntitySizeIfNotNull(this.sizes, sizes, MediaEntity.Size.SMALL, "small");
-            addMediaEntitySizeIfNotNull(this.sizes, sizes, MediaEntity.Size.THUMB, "thumb");
-            if (!json.isNull("type")) {
-                this.type = json.getString("type");
+                JSONObject sizes = json.getJSONObject("sizes");
+                this.sizes = new HashMap<Integer, MediaEntity.Size>(4);
+                // thumbworkarounding API side issue
+                addMediaEntitySizeIfNotNull(this.sizes, sizes, MediaEntity.Size.LARGE, "large");
+                addMediaEntitySizeIfNotNull(this.sizes, sizes, MediaEntity.Size.MEDIUM, "medium");
+                addMediaEntitySizeIfNotNull(this.sizes, sizes, MediaEntity.Size.SMALL, "small");
+                addMediaEntitySizeIfNotNull(this.sizes, sizes, MediaEntity.Size.THUMB, "thumb");
+                if (!json.isNull("type")) {
+                    this.type = json.getString("type");
+                }
             }
-
         } catch (JSONException jsone) {
             throw new TwitterException(jsone);
         }
@@ -134,11 +134,11 @@ public class MediaEntityJSONImpl extends EntityIndex implements MediaEntity {
         int width;
         int height;
         int resize;
-        
+
         /* For serialization purposes only. */
-		/* package */
-		Size() {
-		}
+        /* package */
+        Size() {
+        }
 
         Size(JSONObject json) throws JSONException {
             width = json.getInt("w");
@@ -163,14 +163,19 @@ public class MediaEntityJSONImpl extends EntityIndex implements MediaEntity {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Size)) return false;
+            if (this == o)
+                return true;
+            if (!(o instanceof Size))
+                return false;
 
             Size size = (Size) o;
 
-            if (height != size.height) return false;
-            if (resize != size.resize) return false;
-            if (width != size.width) return false;
+            if (height != size.height)
+                return false;
+            if (resize != size.resize)
+                return false;
+            if (width != size.width)
+                return false;
 
             return true;
         }
@@ -185,22 +190,21 @@ public class MediaEntityJSONImpl extends EntityIndex implements MediaEntity {
 
         @Override
         public String toString() {
-            return "Size{" +
-                    "width=" + width +
-                    ", height=" + height +
-                    ", resize=" + resize +
-                    '}';
+            return "Size{" + "width=" + width + ", height=" + height + ", resize=" + resize + '}';
         }
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof MediaEntityJSONImpl)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof MediaEntityJSONImpl))
+            return false;
 
         MediaEntityJSONImpl that = (MediaEntityJSONImpl) o;
 
-        if (id != that.id) return false;
+        if (id != that.id)
+            return false;
 
         return true;
     }
@@ -212,15 +216,7 @@ public class MediaEntityJSONImpl extends EntityIndex implements MediaEntity {
 
     @Override
     public String toString() {
-        return "MediaEntityJSONImpl{" +
-                "id=" + id +
-                ", url=" + url +
-                ", mediaURL=" + mediaURL +
-                ", mediaURLHttps=" + mediaURLHttps +
-                ", expandedURL=" + expandedURL +
-                ", displayURL='" + displayURL + '\'' +
-                ", sizes=" + sizes +
-                ", type=" + type +
-                '}';
+        return "MediaEntityJSONImpl{" + "id=" + id + ", url=" + url + ", mediaURL=" + mediaURL + ", mediaURLHttps=" + mediaURLHttps + ", expandedURL=" + expandedURL
+                        + ", displayURL='" + displayURL + '\'' + ", sizes=" + sizes + ", type=" + type + '}';
     }
 }

@@ -207,7 +207,7 @@ import static twitter4j.ParseUtil.getDate;
             symbolEntities = symbolEntities == null ? new SymbolEntity[0] : symbolEntities;
             mediaEntities = mediaEntities == null ? new MediaEntity[0] : mediaEntities;
             extendedMediaEntities = extendedMediaEntities == null ? new ExtendedMediaEntity[0] : extendedMediaEntities;
-            text = HTMLEntity.unescapeAndSlideEntityIncdices(json.getString("text"), userMentionEntities,
+            text = HTMLEntity.unescapeAndSlideEntityIndices(json.getString("text"), userMentionEntities,
                     urlEntities, hashtagEntities, mediaEntities);
             if (!json.isNull("current_user_retweet")) {
                 currentUserRetweetId = json.getJSONObject("current_user_retweet").getLong("id");

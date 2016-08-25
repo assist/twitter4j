@@ -26,7 +26,8 @@ import twitter4j.conf.Configuration;
  */
 public final class AuthorizationFactory {
     /**
-     * @param conf configuration
+     * @param conf
+     *            configuration
      * @return authorization instance
      * @since Twitter4J 2.1.11
      */

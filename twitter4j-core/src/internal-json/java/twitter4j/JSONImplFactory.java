@@ -16,10 +16,10 @@
  */
 package twitter4j;
 
+import java.util.Map;
+
 import twitter4j.api.HelpResources;
 import twitter4j.conf.Configuration;
-
-import java.util.Map;
 
 /**
  * @author Yusuke Yamamoto - yusuke at mac.com
@@ -48,7 +48,6 @@ class JSONImplFactory implements ObjectFactory {
         return new UserListJSONImpl(json);
     }
 
-
     @Override
     public Map<String, RateLimitStatus> createRateLimitStatuses(HttpResponse res) throws TwitterException {
         return RateLimitStatusJSONImpl.createRateLimitStatuses(res, conf);
@@ -67,20 +66,20 @@ class JSONImplFactory implements ObjectFactory {
     /**
      * returns a GeoLocation instance if a "geo" element is found.
      *
-     * @param json JSONObject to be parsed
+     * @param json
+     *            JSONObject to be parsed
      * @return GeoLocation instance
-     * @throws TwitterException when coordinates is not included in geo element (should be an API side issue)
+     * @throws TwitterException
+     *             when coordinates is not included in geo element (should be an API side issue)
      */
-    /*package*/
+    /* package */
     static GeoLocation createGeoLocation(JSONObject json) throws TwitterException {
         try {
             if (!json.isNull("coordinates")) {
-                String coordinates = json.getJSONObject("coordinates")
-                        .getString("coordinates");
+                String coordinates = json.getJSONObject("coordinates").getString("coordinates");
                 coordinates = coordinates.substring(1, coordinates.length() - 1);
                 String[] point = coordinates.split(",");
-                return new GeoLocation(Double.parseDouble(point[1]),
-                        Double.parseDouble(point[0]));
+                return new GeoLocation(Double.parseDouble(point[1]), Double.parseDouble(point[0]));
             }
         } catch (JSONException jsone) {
             throw new TwitterException(jsone);
@@ -88,7 +87,7 @@ class JSONImplFactory implements ObjectFactory {
         return null;
     }
 
-    /*package*/
+    /* package */
     static GeoLocation[][] coordinatesAsGeoLocationArray(JSONArray coordinates) throws TwitterException {
         try {
             GeoLocation[][] boundingBox = new GeoLocation[coordinates.length()][];
@@ -281,8 +280,7 @@ class JSONImplFactory implements ObjectFactory {
      * @return user mention entity
      * @since Twitter4J 2.2.6
      */
-    public static UserMentionEntity createUserMentionEntity(int start, int end, String name, String screenName,
-                                                            long id) {
+    public static UserMentionEntity createUserMentionEntity(int start, int end, String name, String screenName, long id) {
         return new UserMentionEntityJSONImpl(start, end, name, screenName, id);
     }
 
@@ -298,8 +296,10 @@ class JSONImplFactory implements ObjectFactory {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof JSONImplFactory)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof JSONImplFactory))
+            return false;
 
         JSONImplFactory that = (JSONImplFactory) o;
 
@@ -316,8 +316,11 @@ class JSONImplFactory implements ObjectFactory {
 
     @Override
     public String toString() {
-        return "JSONImplFactory{" +
-                "conf=" + conf +
-                '}';
+        return "JSONImplFactory{" + "conf=" + conf + '}';
+    }
+
+    @Override
+    public DirectMessageV2 createDirectMessageV2(HttpResponse resp) throws TwitterException {
+        return new DirectMessageV2JSONImpl(resp, conf);
     }
 }

@@ -15,19 +15,18 @@
  */
 package twitter4j;
 
-import javax.annotation.Generated;
 import java.util.Map;
+
+import javax.annotation.Generated;
 
 /**
  * @author Yusuke Yamamoto - yusuke at mac.com
  * @since Twitter4J 2.2.3
  */
-@Generated(
-        value = "generate-lazy-objects.sh",
-        comments = "This is Tool Generated Code. DO NOT EDIT",
-        date = "2011-07-13"
-)
+@Generated(value = "generate-lazy-objects.sh", comments = "This is Tool Generated Code. DO NOT EDIT", date = "2011-07-13")
 final class LazyTwitterAPIConfiguration implements twitter4j.TwitterAPIConfiguration {
+
+    private static final long serialVersionUID = 1L;
     private final HttpResponse res;
     private final ObjectFactory factory;
     private TwitterAPIConfiguration target = null;
@@ -52,31 +51,25 @@ final class LazyTwitterAPIConfiguration implements twitter4j.TwitterAPIConfigura
         return getTarget().getPhotoSizeLimit();
     }
 
-
     public int getShortURLLength() {
         return getTarget().getShortURLLength();
     }
-
 
     public int getShortURLLengthHttps() {
         return getTarget().getShortURLLengthHttps();
     }
 
-
     public int getCharactersReservedPerMedia() {
         return getTarget().getCharactersReservedPerMedia();
     }
-
 
     public Map<Integer, MediaEntity.Size> getPhotoSizes() {
         return getTarget().getPhotoSizes();
     }
 
-
     public String[] getNonUsernamePaths() {
         return getTarget().getNonUsernamePaths();
     }
-
 
     public int getMaxMediaPerUpload() {
         return getTarget().getMaxMediaPerUpload();
@@ -90,11 +83,12 @@ final class LazyTwitterAPIConfiguration implements twitter4j.TwitterAPIConfigura
         return getTarget().getAccessLevel();
     }
 
-
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof TwitterAPIConfiguration)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof TwitterAPIConfiguration))
+            return false;
         return getTarget().equals(o);
     }
 
@@ -105,8 +99,11 @@ final class LazyTwitterAPIConfiguration implements twitter4j.TwitterAPIConfigura
 
     @Override
     public String toString() {
-        return "LazyTwitterAPIConfiguration{" +
-                "target=" + getTarget() +
-                "}";
+        return "LazyTwitterAPIConfiguration{" + "target=" + getTarget() + "}";
+    }
+
+    @Override
+    public int getDmTextCharacterLimit() {
+        return 160;
     }
 }

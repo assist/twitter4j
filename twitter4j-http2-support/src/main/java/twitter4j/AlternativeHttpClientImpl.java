@@ -14,25 +14,34 @@
  * limitations under the License.
  */
 
-
 package twitter4j;
 
-import okhttp3.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.Authenticator;
+import java.net.InetSocketAddress;
+import java.net.PasswordAuthentication;
+import java.net.Proxy;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.Call;
+import okhttp3.ConnectionPool;
+import okhttp3.Headers;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.internal.Util;
 import okio.BufferedSink;
 import okio.Okio;
 import okio.Source;
 import twitter4j.conf.ConfigurationContext;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.*;
-import java.net.Authenticator;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Hiroaki Takeuchi - takke30 at gmail.com
@@ -48,10 +57,11 @@ public class AlternativeHttpClientImpl extends HttpClientBase implements HttpRes
 
     private static final MediaType TEXT = MediaType.parse("text/plain; charset=utf-8");
     private static final MediaType FORM_URL_ENCODED = MediaType.parse("application/x-www-form-urlencoded");
+    private static final MediaType JSON = MediaType.parse("application/json");
 
     private OkHttpClient okHttpClient;
 
-    //for test
+    // for test
     public static boolean sPreferSpdy = true;
     public static boolean sPreferHttp2 = true;
     private Protocol lastRequestProtocol = null;
@@ -64,9 +74,8 @@ public class AlternativeHttpClientImpl extends HttpClientBase implements HttpRes
         super(conf);
     }
 
-
     @Override
-    HttpResponse handleRequest(HttpRequest req) throws TwitterException {
+                    HttpResponse handleRequest(HttpRequest req) throws TwitterException {
         prepareOkHttpClient();
 
         OkHttpResponse res = null;
@@ -89,7 +98,6 @@ public class AlternativeHttpClientImpl extends HttpClientBase implements HttpRes
                 break;
         }
         final Request request = requestBuilder.build();
-
 
         int retriedCount;
         int retry = CONF.getHttpRetryCount() + 1;
@@ -116,10 +124,7 @@ public class AlternativeHttpClientImpl extends HttpClientBase implements HttpRes
                     }
                 }
                 if (responseCode < OK || (responseCode != FOUND && MULTIPLE_CHOICES <= responseCode)) {
-                    if (responseCode == ENHANCE_YOUR_CLAIM ||
-                            responseCode == BAD_REQUEST ||
-                            responseCode < INTERNAL_SERVER_ERROR ||
-                            retriedCount == CONF.getHttpRetryCount()) {
+                    if (responseCode == ENHANCE_YOUR_CLAIM || responseCode == BAD_REQUEST || responseCode < INTERNAL_SERVER_ERROR || retriedCount == CONF.getHttpRetryCount()) {
 
                         throw new TwitterException(res.asString(), res);
                     }
@@ -139,7 +144,7 @@ public class AlternativeHttpClientImpl extends HttpClientBase implements HttpRes
                 logger.debug("Sleeping " + CONF.getHttpRetryIntervalSeconds() + " seconds until the next retry.");
                 Thread.sleep(CONF.getHttpRetryIntervalSeconds() * 1000);
             } catch (InterruptedException ignore) {
-                //nothing to do
+                // nothing to do
             }
 
         }
@@ -155,23 +160,23 @@ public class AlternativeHttpClientImpl extends HttpClientBase implements HttpRes
                 if (parameter.isFile()) {
                     if (parameter.hasFileBody()) {
                         multipartBodyBuilder.addPart(
-                                Headers.of("Content-Disposition", "form-data; name=\"" + parameter.getName() + "\"; filename=\"" + parameter.getFile().getName() + "\""),
-                                createInputStreamRequestBody(MediaType.parse(parameter.getContentType()), parameter.getFileBody())
-                        );
+                                        Headers.of("Content-Disposition", "form-data; name=\"" + parameter.getName() + "\"; filename=\"" + parameter.getFile().getName() + "\""),
+                                        createInputStreamRequestBody(MediaType.parse(parameter.getContentType()), parameter.getFileBody()));
                     } else {
                         multipartBodyBuilder.addPart(
-                                Headers.of("Content-Disposition", "form-data; name=\"" + parameter.getName() + "\"; filename=\"" + parameter.getFile().getName() + "\""),
-                                RequestBody.create(MediaType.parse(parameter.getContentType()), parameter.getFile())
-                        );
+                                        Headers.of("Content-Disposition", "form-data; name=\"" + parameter.getName() + "\"; filename=\"" + parameter.getFile().getName() + "\""),
+                                        RequestBody.create(MediaType.parse(parameter.getContentType()), parameter.getFile()));
                     }
                 } else {
-                    multipartBodyBuilder.addPart(
-                            Headers.of("Content-Disposition", "form-data; name=\"" + parameter.getName() + "\""),
-                            RequestBody.create(TEXT, parameter.getValue().getBytes("UTF-8"))
-                    );
+                    multipartBodyBuilder.addPart(Headers.of("Content-Disposition", "form-data; name=\"" + parameter.getName() + "\""),
+                                    RequestBody.create(TEXT, parameter.getValue().getBytes("UTF-8")));
                 }
             }
             return multipartBodyBuilder.build();
+        } else if (HttpParameter.isJsonBody(req.getParameters())) {
+            String jsonBody = HttpParameter.getJsonBody(req.getParameters());
+            logger.debug("Post json:", jsonBody);
+            return RequestBody.create(JSON, jsonBody.getBytes("UTF-8"));
         } else {
             return RequestBody.create(FORM_URL_ENCODED, HttpParameter.encodeParameters(req.getParameters()).getBytes("UTF-8"));
         }
@@ -235,20 +240,22 @@ public class AlternativeHttpClientImpl extends HttpClientBase implements HttpRes
         if (okHttpClient == null) {
             OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
-            //set protocols
+            // set protocols
             List<Protocol> protocols = new ArrayList<Protocol>();
             protocols.add(Protocol.HTTP_1_1);
-            if (sPreferHttp2) protocols.add(Protocol.HTTP_2);
-            if (sPreferSpdy) protocols.add(Protocol.SPDY_3);
+            if (sPreferHttp2)
+                protocols.add(Protocol.HTTP_2);
+            if (sPreferSpdy)
+                protocols.add(Protocol.SPDY_3);
             builder.protocols(protocols);
 
-            //connectionPool setup
+            // connectionPool setup
             builder.connectionPool(new ConnectionPool(MAX_CONNECTIONS, KEEP_ALIVE_DURATION_MS, TimeUnit.MILLISECONDS));
 
-            //redirect disable
+            // redirect disable
             builder.followSslRedirects(false);
 
-            //for proxy
+            // for proxy
             if (isProxyConfigured()) {
                 if (CONF.getHttpProxyUser() != null && !CONF.getHttpProxyUser().equals("")) {
                     if (logger.isDebugEnabled()) {
@@ -258,31 +265,28 @@ public class AlternativeHttpClientImpl extends HttpClientBase implements HttpRes
 
                     Authenticator.setDefault(new Authenticator() {
                         @Override
-                        protected PasswordAuthentication
-                        getPasswordAuthentication() {
+                        protected PasswordAuthentication getPasswordAuthentication() {
                             if (getRequestorType().equals(RequestorType.PROXY)) {
-                                return new PasswordAuthentication(CONF.getHttpProxyUser(),
-                                        CONF.getHttpProxyPassword().toCharArray());
+                                return new PasswordAuthentication(CONF.getHttpProxyUser(), CONF.getHttpProxyPassword().toCharArray());
                             } else {
                                 return null;
                             }
                         }
                     });
                 }
-                final Proxy proxy = new Proxy(Proxy.Type.HTTP, InetSocketAddress
-                        .createUnresolved(CONF.getHttpProxyHost(), CONF.getHttpProxyPort()));
+                final Proxy proxy = new Proxy(Proxy.Type.HTTP, InetSocketAddress.createUnresolved(CONF.getHttpProxyHost(), CONF.getHttpProxyPort()));
                 if (logger.isDebugEnabled()) {
                     logger.debug("Opening proxied connection(" + CONF.getHttpProxyHost() + ":" + CONF.getHttpProxyPort() + ")");
                 }
                 builder.proxy(proxy);
             }
 
-            //connection timeout
+            // connection timeout
             if (CONF.getHttpConnectionTimeout() > 0) {
                 builder.connectTimeout(CONF.getHttpConnectionTimeout(), TimeUnit.MILLISECONDS);
             }
 
-            //read timeout
+            // read timeout
             if (CONF.getHttpReadTimeout() > 0) {
                 builder.readTimeout(CONF.getHttpReadTimeout(), TimeUnit.MILLISECONDS);
             }
@@ -291,7 +295,7 @@ public class AlternativeHttpClientImpl extends HttpClientBase implements HttpRes
         }
     }
 
-    //for test
+    // for test
     public Protocol getLastRequestProtocol() {
         return lastRequestProtocol;
     }

@@ -1,9 +1,9 @@
 package twitter4j;
 
+import java.util.Map;
+
 import twitter4j.api.HelpResources;
 import twitter4j.conf.Configuration;
-
-import java.util.Map;
 
 /**
  * @author Yusuke Yamamoto - yusuke at mac.com
@@ -55,7 +55,6 @@ class LazyJSONImplFactory implements ObjectFactory {
             }
         };
     }
-
 
     @Override
     public Trends createTrends(HttpResponse res) throws TwitterException {
@@ -300,8 +299,10 @@ class LazyJSONImplFactory implements ObjectFactory {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof LazyJSONImplFactory)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof LazyJSONImplFactory))
+            return false;
 
         LazyJSONImplFactory that = (LazyJSONImplFactory) o;
 
@@ -318,8 +319,11 @@ class LazyJSONImplFactory implements ObjectFactory {
 
     @Override
     public String toString() {
-        return "LazyFactory{" +
-                "factory=" + factory +
-                '}';
+        return "LazyFactory{" + "factory=" + factory + '}';
+    }
+
+    @Override
+    public DirectMessageV2 createDirectMessageV2(HttpResponse resp) {
+        return null;
     }
 }

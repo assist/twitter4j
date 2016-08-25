@@ -114,7 +114,7 @@ import java.util.Date;
 
             description = ParseUtil.getRawString("description", json);
             if (description != null) {
-                description = HTMLEntity.unescapeAndSlideEntityIncdices(description,
+                description = HTMLEntity.unescapeAndSlideEntityIndices(description,
                         null, descriptionURLEntities, null, null);
             }
 

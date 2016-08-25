@@ -16,13 +16,22 @@
 
 package twitter4j;
 
-import twitter4j.conf.ConfigurationContext;
-
-import java.io.*;
-import java.net.*;
+import java.io.BufferedInputStream;
+import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.Authenticator;
+import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.PasswordAuthentication;
+import java.net.Proxy;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import twitter4j.conf.ConfigurationContext;
 
 /**
  * @author Yusuke Yamamoto - yusuke at mac.com
@@ -30,7 +39,6 @@ import java.util.Map;
  */
 class HttpClientImpl extends HttpClientBase implements HttpResponseCode, java.io.Serializable {
     private static final Logger logger = Logger.getLogger(HttpClientImpl.class);
-
 
     static {
         // disable keepAlive (Android 2.1 or earlier)
@@ -68,7 +76,7 @@ class HttpClientImpl extends HttpClientBase implements HttpResponseCode, java.io
 
     @Override
     public HttpResponse get(String url) throws TwitterException {
-        return request(new HttpRequest(RequestMethod.GET, url, null, null, null));
+        return request(new HttpRequest(RequestMethod.GET, url, (HttpParameter[]) null, null, null));
     }
 
     public HttpResponse post(String url, HttpParameter[] params) throws TwitterException {
@@ -77,6 +85,7 @@ class HttpClientImpl extends HttpClientBase implements HttpResponseCode, java.io
 
     @Override
     public HttpResponse handleRequest(HttpRequest req) throws TwitterException {
+
         int retriedCount;
         int retry = CONF.getHttpRetryCount() + 1;
         HttpResponse res = null;
@@ -103,9 +112,7 @@ class HttpClientImpl extends HttpClientBase implements HttpResponseCode, java.io
                                     write(out, boundary + "\r\n");
                                     write(out, "Content-Disposition: form-data; name=\"" + param.getName() + "\"; filename=\"" + param.getFile().getName() + "\"\r\n");
                                     write(out, "Content-Type: " + param.getContentType() + "\r\n\r\n");
-                                    BufferedInputStream in = new BufferedInputStream(
-                                            param.hasFileBody() ? param.getFileBody() : new FileInputStream(param.getFile())
-                                    );
+                                    BufferedInputStream in = new BufferedInputStream(param.hasFileBody() ? param.getFileBody() : new FileInputStream(param.getFile()));
                                     byte[] buff = new byte[1024];
                                     int length;
                                     while ((length = in.read(buff)) != -1) {
@@ -125,14 +132,22 @@ class HttpClientImpl extends HttpClientBase implements HttpResponseCode, java.io
                             write(out, boundary + "--\r\n");
                             write(out, "\r\n");
 
+                        } else if (HttpParameter.isJsonBody(req.getParameters())) {
+                            String jsonBody = HttpParameter.getJsonBody(req.getParameters());
+                            logger.debug("Post json:", jsonBody);
+                            
+                            con.setRequestProperty("Content-Type", "application/json");
+                            byte[] bytes = jsonBody.getBytes("UTF-8");
+                            con.setRequestProperty("Content-Length", Integer.toString(bytes.length));
+                            con.setDoOutput(true);
+                            os = con.getOutputStream();
+                            os.write(bytes);
                         } else {
-                            con.setRequestProperty("Content-Type",
-                                    "application/x-www-form-urlencoded");
+                            con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
                             String postParam = HttpParameter.encodeParameters(req.getParameters());
                             logger.debug("Post Params: ", postParam);
                             byte[] bytes = postParam.getBytes("UTF-8");
-                            con.setRequestProperty("Content-Length",
-                                    Integer.toString(bytes.length));
+                            con.setRequestProperty("Content-Length", Integer.toString(bytes.length));
                             con.setDoOutput(true);
                             os = con.getOutputStream();
                             os.write(bytes);
@@ -157,10 +172,7 @@ class HttpClientImpl extends HttpClientBase implements HttpResponseCode, java.io
                         }
                     }
                     if (responseCode < OK || (responseCode != FOUND && MULTIPLE_CHOICES <= responseCode)) {
-                        if (responseCode == ENHANCE_YOUR_CLAIM ||
-                                responseCode == BAD_REQUEST ||
-                                responseCode < INTERNAL_SERVER_ERROR ||
-                                retriedCount == CONF.getHttpRetryCount()) {
+                        if (responseCode == ENHANCE_YOUR_CLAIM || responseCode == BAD_REQUEST || responseCode < INTERNAL_SERVER_ERROR || retriedCount == CONF.getHttpRetryCount()) {
                             throw new TwitterException(res.asString(), res);
                         }
                         // will retry if the status code is INTERNAL_SERVER_ERROR
@@ -186,7 +198,7 @@ class HttpClientImpl extends HttpClientBase implements HttpResponseCode, java.io
                 logger.debug("Sleeping " + CONF.getHttpRetryIntervalSeconds() + " seconds until the next retry.");
                 Thread.sleep(CONF.getHttpRetryIntervalSeconds() * 1000);
             } catch (InterruptedException ignore) {
-                //nothing to do
+                // nothing to do
             }
         }
         return res;
@@ -195,8 +207,10 @@ class HttpClientImpl extends HttpClientBase implements HttpResponseCode, java.io
     /**
      * sets HTTP headers
      *
-     * @param req        The request
-     * @param connection HttpURLConnection
+     * @param req
+     *            The request
+     * @param connection
+     *            HttpURLConnection
      */
     private void setHeaders(HttpRequest req, HttpURLConnection connection) {
         if (logger.isDebugEnabled()) {
@@ -207,7 +221,7 @@ class HttpClientImpl extends HttpClientBase implements HttpResponseCode, java.io
         String authorizationHeader;
         if (req.getAuthorization() != null && (authorizationHeader = req.getAuthorization().getAuthorizationHeader(req)) != null) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Authorization: ", authorizationHeader.replaceAll(".", "*"));
+                logger.debug("Authorization: ", authorizationHeader);//.replaceAll(".", "*")
             }
             connection.addRequestProperty("Authorization", authorizationHeader);
         }
@@ -229,20 +243,17 @@ class HttpClientImpl extends HttpClientBase implements HttpResponseCode, java.io
                 }
                 Authenticator.setDefault(new Authenticator() {
                     @Override
-                    protected PasswordAuthentication
-                    getPasswordAuthentication() {
-                        //respond only to proxy auth requests
+                    protected PasswordAuthentication getPasswordAuthentication() {
+                        // respond only to proxy auth requests
                         if (getRequestorType().equals(RequestorType.PROXY)) {
-                            return new PasswordAuthentication(CONF.getHttpProxyUser(),
-                                    CONF.getHttpProxyPassword().toCharArray());
+                            return new PasswordAuthentication(CONF.getHttpProxyUser(), CONF.getHttpProxyPassword().toCharArray());
                         } else {
                             return null;
                         }
                     }
                 });
             }
-            final Proxy proxy = new Proxy(Proxy.Type.HTTP, InetSocketAddress
-                    .createUnresolved(CONF.getHttpProxyHost(), CONF.getHttpProxyPort()));
+            final Proxy proxy = new Proxy(Proxy.Type.HTTP, InetSocketAddress.createUnresolved(CONF.getHttpProxyHost(), CONF.getHttpProxyPort()));
             if (logger.isDebugEnabled()) {
                 logger.debug("Opening proxied connection(" + CONF.getHttpProxyHost() + ":" + CONF.getHttpProxyPort() + ")");
             }
@@ -259,4 +270,5 @@ class HttpClientImpl extends HttpClientBase implements HttpResponseCode, java.io
         con.setInstanceFollowRedirects(false);
         return con;
     }
+
 }

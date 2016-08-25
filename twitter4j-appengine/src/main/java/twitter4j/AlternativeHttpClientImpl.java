@@ -15,14 +15,22 @@
  */
 package twitter4j;
 
-import com.google.appengine.api.urlfetch.FetchOptions.Builder;
-import com.google.appengine.api.urlfetch.*;
+import static twitter4j.RequestMethod.POST;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import static twitter4j.RequestMethod.POST;
+import com.google.appengine.api.urlfetch.FetchOptions.Builder;
+import com.google.appengine.api.urlfetch.HTTPHeader;
+import com.google.appengine.api.urlfetch.HTTPMethod;
+import com.google.appengine.api.urlfetch.HTTPRequest;
+import com.google.appengine.api.urlfetch.URLFetchService;
+import com.google.appengine.api.urlfetch.URLFetchServiceFactory;
 
 /**
  * @author Takao Nakaguchi - takao.nakaguchi at gmail.com
@@ -40,10 +48,7 @@ class AlternativeHttpClientImpl extends HttpClientBase {
     public HttpResponse handleRequest(HttpRequest req) throws TwitterException {
         HTTPRequest request;
         try {
-            request = new HTTPRequest(new URL(req.getURL())
-                    , HTTPMethod.valueOf(req.getMethod().name())
-                    , Builder.disallowTruncate().setDeadline(CONF.getHttpReadTimeout() / 1000D)
-            );
+            request = new HTTPRequest(new URL(req.getURL()), HTTPMethod.valueOf(req.getMethod().name()), Builder.disallowTruncate().setDeadline(CONF.getHttpReadTimeout() / 1000D));
         } catch (MalformedURLException e) {
             throw new TwitterException(e);
         }
@@ -64,9 +69,7 @@ class AlternativeHttpClientImpl extends HttpClientBase {
                             write(out, boundary + "\r\n");
                             write(out, "Content-Disposition: form-data; name=\"" + param.getName() + "\"; filename=\"" + param.getFile().getName() + "\"\r\n");
                             write(out, "Content-Type: " + param.getContentType() + "\r\n\r\n");
-                            BufferedInputStream in = new BufferedInputStream(
-                                    param.hasFileBody() ? param.getFileBody() : new FileInputStream(param.getFile())
-                            );
+                            BufferedInputStream in = new BufferedInputStream(param.hasFileBody() ? param.getFileBody() : new FileInputStream(param.getFile()));
                             int buff = 0;
                             while ((buff = in.read()) != -1) {
                                 out.write(buff);
@@ -84,16 +87,21 @@ class AlternativeHttpClientImpl extends HttpClientBase {
                     }
                     write(out, boundary + "--\r\n");
                     write(out, "\r\n");
+                } else if (HttpParameter.isJsonBody(req.getParameters())) {
+                    String jsonBody = HttpParameter.getJsonBody(req.getParameters());
+                    request.setHeader(new HTTPHeader("Content-Type", "application/json"));
+                    String postParam = HttpParameter.encodeParameters(req.getParameters());
+                    logger.debug("Post json:", jsonBody);
+                    byte[] bytes = postParam.getBytes("UTF-8");
+                    request.setHeader(new HTTPHeader("Content-Length", Integer.toString(bytes.length)));
+                    os = new ByteArrayOutputStream();
+                    os.write(bytes);
                 } else {
-                    request.setHeader(new HTTPHeader(
-                            "Content-Type",
-                            "application/x-www-form-urlencoded"
-                    ));
+                    request.setHeader(new HTTPHeader("Content-Type", "application/x-www-form-urlencoded"));
                     String postParam = HttpParameter.encodeParameters(req.getParameters());
                     logger.debug("Post Params: ", postParam);
                     byte[] bytes = postParam.getBytes("UTF-8");
-                    request.setHeader(new HTTPHeader("Content-Length",
-                            Integer.toString(bytes.length)));
+                    request.setHeader(new HTTPHeader("Content-Length", Integer.toString(bytes.length)));
                     os = new ByteArrayOutputStream();
                     os.write(bytes);
                 }

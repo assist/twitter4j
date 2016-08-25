@@ -16,9 +16,9 @@
  */
 package twitter4j;
 
-import twitter4j.api.HelpResources;
-
 import java.util.Map;
+
+import twitter4j.api.HelpResources;
 
 /**
  * @author Yusuke Yamamoto - yusuke at mac.com
@@ -90,4 +90,10 @@ interface ObjectFactory extends java.io.Serializable {
     <T> ResponseList<T> createEmptyResponseList();
 
     OEmbed createOEmbed(HttpResponse res) throws TwitterException;
+
+    /**
+     * @throws TwitterException
+     * @since Twitter4J 4.1.0
+     */
+    DirectMessageV2 createDirectMessageV2(HttpResponse resp) throws TwitterException;
 }

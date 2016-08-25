@@ -16,9 +16,9 @@
 
 package twitter4j;
 
-import twitter4j.auth.Authorization;
-
 import java.util.Map;
+
+import twitter4j.auth.Authorization;
 
 /**
  * A utility class to handle HTTP request/response.
@@ -35,25 +35,21 @@ public interface HttpClient {
 
     HttpResponse request(HttpRequest req, HttpResponseListener listener) throws TwitterException;
 
-    HttpResponse get(String url, HttpParameter[] parameters
-            , Authorization authorization, HttpResponseListener listener) throws TwitterException;
+    HttpResponse get(String url, HttpParameter[] parameters, Authorization authorization, HttpResponseListener listener) throws TwitterException;
 
     HttpResponse get(String url) throws TwitterException;
 
-    HttpResponse post(String url, HttpParameter[] parameters
-            , Authorization authorization, HttpResponseListener listener) throws TwitterException;
+    HttpResponse post(String url, HttpParameter[] parameters, Authorization authorization, HttpResponseListener listener) throws TwitterException;
 
     HttpResponse post(String url) throws TwitterException;
 
-    HttpResponse delete(String url, HttpParameter[] parameters
-            , Authorization authorization, HttpResponseListener listener) throws TwitterException;
+    HttpResponse delete(String url, HttpParameter[] parameters, Authorization authorization, HttpResponseListener listener) throws TwitterException;
 
     HttpResponse delete(String url) throws TwitterException;
 
     HttpResponse head(String url) throws TwitterException;
 
-    HttpResponse put(String url, HttpParameter[] parameters
-            , Authorization authorization, HttpResponseListener listener) throws TwitterException;
+    HttpResponse put(String url, HttpParameter[] parameters, Authorization authorization, HttpResponseListener listener) throws TwitterException;
 
     HttpResponse put(String url) throws TwitterException;
 }

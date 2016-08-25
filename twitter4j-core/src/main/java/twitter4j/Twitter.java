@@ -15,7 +15,22 @@
  */
 package twitter4j;
 
-import twitter4j.api.*;
+import java.util.List;
+
+import twitter4j.api.DirectMessagesResources;
+import twitter4j.api.FavoritesResources;
+import twitter4j.api.FriendsFollowersResources;
+import twitter4j.api.HelpResources;
+import twitter4j.api.ListsResources;
+import twitter4j.api.PlacesGeoResources;
+import twitter4j.api.SavedSearchesResources;
+import twitter4j.api.SearchResource;
+import twitter4j.api.SpamReportingResource;
+import twitter4j.api.SuggestedUsersResources;
+import twitter4j.api.TimelinesResources;
+import twitter4j.api.TrendsResources;
+import twitter4j.api.TweetsResources;
+import twitter4j.api.UsersResources;
 import twitter4j.auth.OAuth2Support;
 import twitter4j.auth.OAuthSupport;
 
@@ -23,24 +38,9 @@ import twitter4j.auth.OAuthSupport;
  * @author Yusuke Yamamoto - yusuke at mac.com
  * @since Twitter4J 2.2.0
  */
-public interface Twitter extends java.io.Serializable,
-    OAuthSupport,
-    OAuth2Support,
-    TwitterBase,
-    TimelinesResources,
-    TweetsResources,
-    SearchResource,
-    DirectMessagesResources,
-    FriendsFollowersResources,
-    UsersResources,
-    SuggestedUsersResources,
-    FavoritesResources,
-    ListsResources,
-    SavedSearchesResources,
-    PlacesGeoResources,
-    TrendsResources,
-    SpamReportingResource,
-    HelpResources {
+public interface Twitter extends java.io.Serializable, OAuthSupport, OAuth2Support, TwitterBase, TimelinesResources, TweetsResources, SearchResource, DirectMessagesResources,
+                FriendsFollowersResources, UsersResources, SuggestedUsersResources, FavoritesResources, ListsResources, SavedSearchesResources, PlacesGeoResources, TrendsResources,
+                SpamReportingResource, HelpResources {
 
     /**
      * @return {@link twitter4j.api.TimelinesResources}
@@ -125,4 +125,6 @@ public interface Twitter extends java.io.Serializable,
      * @since Twitter4J 3.0.4
      */
     HelpResources help();
+
+    List<DirectMessageV2> parseIncomingWebhookBody(String postBodyFromWebhook) throws TwitterException;
 }

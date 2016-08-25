@@ -122,7 +122,7 @@ import java.util.Date;
             symbolEntities = symbolEntities == null ? new SymbolEntity[0] : symbolEntities;
             mediaEntities = mediaEntities == null ? new MediaEntity[0] : mediaEntities;
             extendedMediaEntities = extendedMediaEntities == null ? new ExtendedMediaEntity[0] : extendedMediaEntities;
-            text = HTMLEntity.unescapeAndSlideEntityIncdices(json.getString("text"), userMentionEntities,
+            text = HTMLEntity.unescapeAndSlideEntityIndices(json.getString("text"), userMentionEntities,
                     urlEntities, hashtagEntities, mediaEntities);
         } catch (JSONException jsone) {
             throw new TwitterException(jsone);
