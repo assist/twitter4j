@@ -127,4 +127,8 @@ public interface Twitter extends java.io.Serializable, OAuthSupport, OAuth2Suppo
     HelpResources help();
 
     List<DirectMessageV2> parseIncomingWebhookBody(String postBodyFromWebhook) throws TwitterException;
+
+    QuickReplyBuilder getQuickReplyBuilder();
+
+    QuickReplyBuilder quickReplyBuilder();
 }

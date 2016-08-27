@@ -1623,4 +1623,14 @@ class TwitterImpl extends TwitterBaseImpl implements Twitter {
         return DirectMessageV2JSONImpl.parseIncomingWebhookBody(postBodyFromWebhook);
     }
 
+    @Override
+    public QuickReplyBuilder getQuickReplyBuilder() {
+        return QuickReplyJSONImpl.getBuilder();
+    }
+
+    @Override
+    public QuickReplyBuilder quickReplyBuilder() {
+        return QuickReplyJSONImpl.getBuilder();
+    }
+
 }
