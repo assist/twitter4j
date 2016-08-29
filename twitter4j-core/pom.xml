@@ -48,12 +48,20 @@
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/
             </url>
         </repository>
-        <snapshotRepository>
+  
+        
+         <!--  >snapshotRepository>
             <id>org.twitter4j</id>
             <name>twitter4j.org Repository</name>
             <uniqueVersion>false</uniqueVersion>
             <url>file:${user.home}/maven2/</url>
-        </snapshotRepository>
+        </snapshotRepository -->
+        
+        <snapshotRepository>
+			<id>deployment</id>
+			<name>Internal Releases</name>
+			<url>http://ec2-52-38-37-8.us-west-2.compute.amazonaws.com:8081/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
     </distributionManagement>
     <profiles>
         <profile>
