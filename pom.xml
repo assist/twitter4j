@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.twitter4j</groupId>
     <artifactId>twitter4j</artifactId>
-    <version>4.0.5-SNAPSHOT</version>
+    <version>4.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>twitter4j</name>
     <description>A Java library for the Twitter API</description>
@@ -56,12 +56,18 @@
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/
             </url>
         </repository>
-        <snapshotRepository>
+        <!--  >snapshotRepository>
             <id>org.twitter4j</id>
             <name>twitter4j.org Repository</name>
             <uniqueVersion>false</uniqueVersion>
             <url>file:${user.home}/maven2/</url>
-        </snapshotRepository>
+        </snapshotRepository -->
+        
+        <snapshotRepository>
+			<id>deployment</id>
+			<name>Internal Releases</name>
+			<url>http://ec2-52-38-37-8.us-west-2.compute.amazonaws.com:8081/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
     </distributionManagement>
     <profiles>
         <profile>
