@@ -42,10 +42,13 @@ public class DirectMessageV2JSONImpl extends TwitterResponseImpl implements Dire
         init(json);
     }
 
-    private void init(JSONObject json) throws TwitterException {
+    private void init(JSONObject event) throws TwitterException {
         try {
+            JSONObject json = event.getJSONObject("event");
             id = ParseUtil.getLong("id", json);
-            createdAt = new Date(ParseUtil.getLong(json.get("time").toString()));
+            if (json.has("created_timestamp")) {
+                createdAt = new Date(ParseUtil.getLong(json.get("created_timestamp").toString()));
+            }
             senderId = ParseUtil.getLong(json.getJSONObject("message_create").get("sender_id").toString());
             recipientId = ParseUtil.getLong(json.getJSONObject("message_create").getJSONObject("target").get("recipient_id").toString());
 
@@ -220,8 +223,8 @@ public class DirectMessageV2JSONImpl extends TwitterResponseImpl implements Dire
     public static String createJsonString(long userId, String text, QuickReply quickReplies, Long mediaId) throws TwitterException {
         String json = null;
         try {
-            JSONWriter jsonWriter = new JSONStringer().object().key("type").value("message_create").key("message_create").object().key("target").object().key("recipient_id")
-                            .value(userId).endObject().key("message_data").object().key("text").value(text);
+            JSONWriter jsonWriter = new JSONStringer().object().key("event").object().key("type").value("message_create").key("message_create").object().key("target").object()
+                            .key("recipient_id").value(userId).endObject().key("message_data").object().key("text").value(text);
             if (quickReplies != null) {
                 jsonWriter.key("quick_reply").object().key("type").value(quickReplies.getType());
                 if (quickReplies.hasOptions()) {
@@ -241,7 +244,7 @@ public class DirectMessageV2JSONImpl extends TwitterResponseImpl implements Dire
                     jsonWriter.key("keyboard").value(quickReplies.getTextInput().getKeyboard());
                     jsonWriter.endObject();
                 }
-                jsonWriter.endObject();
+                jsonWriter.endObject().endObject();
             }
             if (mediaId != null) {
                 jsonWriter.key("attachment").object().key("media").object().key("id").value(mediaId).endObject().endObject();
@@ -272,6 +275,7 @@ public class DirectMessageV2JSONImpl extends TwitterResponseImpl implements Dire
         return res;
     }
 
+    // {"direct_message_events":[{"type":"message_create","id":"771698995001516035","created_timestamp":"1472822352539","message_create":{"target":{"recipient_id":"xxx"},"sender_id":"yyy","message_data":{"text":"test"}}}]}
     private static List<DirectMessageV2> createDirectMessageList(JSONObject json, Configuration conf) throws TwitterException {
         List<DirectMessageV2> res = new ArrayList<DirectMessageV2>();
         if (json.has("direct_message_events")) {
