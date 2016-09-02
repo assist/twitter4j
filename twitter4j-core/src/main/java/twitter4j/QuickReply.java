@@ -5,8 +5,7 @@ import java.util.List;
 
 /**
  * 
- * @author ccomandini
- * @date 19 ago 2016
+ * @author ccomandini 19 ago 2016
  */
 public interface QuickReply extends Serializable {
 

@@ -158,11 +158,16 @@ public interface DirectMessagesResources {
      * c.comandini at gmail dot com
      * 
      * @param userId
+     *            the user id
      * @param text
+     *            text to be sent
      * @param quickReplies
+     *            optional
      * @param attachmentMedia
-     * @return
+     *            optional
+     * @return a DM ver2
      * @throws TwitterException
+     *             if something goes wrong
      */
     DirectMessageV2 sendDirectMessageV2(long userId, String text, QuickReply quickReplies, File attachmentMedia) throws TwitterException;
 }

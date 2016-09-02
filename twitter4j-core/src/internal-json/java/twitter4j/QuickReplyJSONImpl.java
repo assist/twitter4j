@@ -7,8 +7,7 @@ import twitter4j.conf.Configuration;
 
 /**
  * 
- * @author ccomandini
- * @date 24 ago 2016
+ * @author ccomandini 24 ago 2016
  */
 public class QuickReplyJSONImpl implements QuickReply {
 

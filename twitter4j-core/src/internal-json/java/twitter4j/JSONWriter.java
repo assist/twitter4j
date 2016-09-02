@@ -82,6 +82,9 @@ public class JSONWriter {
 
     /**
      * Make a fresh JSONWriter. It can be used to build one JSON text.
+     * 
+     * @param w
+     *            appendable param
      */
     public JSONWriter(Appendable w) {
         this.comma = false;
@@ -284,6 +287,7 @@ public class JSONWriter {
      *            A boolean.
      * @return this
      * @throws JSONException
+     *             a
      */
     public JSONWriter value(boolean b) throws JSONException {
         return this.append(b ? "true" : "false");
@@ -309,6 +313,7 @@ public class JSONWriter {
      *            A long.
      * @return this
      * @throws JSONException
+     *             a
      */
     public JSONWriter value(long l) throws JSONException {
         return this.append(Long.toString(l));
