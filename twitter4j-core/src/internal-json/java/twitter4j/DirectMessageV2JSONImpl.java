@@ -42,9 +42,15 @@ public class DirectMessageV2JSONImpl extends TwitterResponseImpl implements Dire
         init(json);
     }
 
-    private void init(JSONObject event) throws TwitterException {
+    private void init(JSONObject root) throws TwitterException {
         try {
-            JSONObject json = event.getJSONObject("event");
+            JSONObject json = null;
+            if (root.has("event")) {
+                json = root.getJSONObject("event");
+            } else {
+                json = root;
+            }
+
             id = ParseUtil.getLong("id", json);
             if (json.has("created_timestamp")) {
                 createdAt = new Date(ParseUtil.getLong(json.get("created_timestamp").toString()));
@@ -244,12 +250,12 @@ public class DirectMessageV2JSONImpl extends TwitterResponseImpl implements Dire
                     jsonWriter.key("keyboard").value(quickReplies.getTextInput().getKeyboard());
                     jsonWriter.endObject();
                 }
-                jsonWriter.endObject().endObject();
+                jsonWriter.endObject();
             }
             if (mediaId != null) {
                 jsonWriter.key("attachment").object().key("media").object().key("id").value(mediaId).endObject().endObject();
             }
-            jsonWriter.endObject().endObject().endObject();
+            jsonWriter.endObject().endObject().endObject().endObject();
 
             json = jsonWriter.toString();
         } catch (JSONException e) {
