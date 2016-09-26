@@ -51,7 +51,8 @@ public class QuickReplyJSONImpl implements QuickReply {
                 JSONArray options = json.getJSONArray("options");
                 for (int i = 0; i < options.length(); i++) {
                     JSONObject opt = options.getJSONObject(i);
-                    addOption(opt.getString("label"), opt.getString("metadata"));
+                    // TODO add image property when it will be available
+                    addOption(opt.getString("label"), opt.getString("metadata"), opt.getString("description"));
                 }
             }
             if (json.has("text_input")) {
@@ -87,6 +88,18 @@ public class QuickReplyJSONImpl implements QuickReply {
     public void addOption(String label, String metadata) {
         if (options != null) {
             options.add(new Options(label, metadata));
+        }
+    }
+
+    public void addOption(String label, String metadata, String decription) {
+        if (options != null) {
+            options.add(new Options(label, metadata, decription));
+        }
+    }
+
+    public void addOption(String label, String metadata, String decription, String thumbImage) {
+        if (options != null) {
+            options.add(new Options(label, metadata, decription, thumbImage));
         }
     }
 

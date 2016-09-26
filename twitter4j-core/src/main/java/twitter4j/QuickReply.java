@@ -17,17 +17,37 @@ public interface QuickReply extends Serializable {
 
         @Override
         public String toString() {
-            return "Options [label=" + label + ", metadata=" + metadata + "]";
+            return "Options [label=" + label + ", metadata=" + metadata + ", decription=" + decription + ", thumbImage=" + thumbImage + "]";
         }
 
-        private static final long serialVersionUID = 1L;
+        private static final long serialVersionUID = 2L;
         private final String label;
         private final String metadata;
+        private final String decription;
+        private final String thumbImage;
 
         public Options(String label, String metadata) {
             super();
             this.label = label;
             this.metadata = metadata;
+            this.decription = null;
+            this.thumbImage = null;
+        }
+
+        public Options(String label, String metadata, String decription) {
+            super();
+            this.label = label;
+            this.metadata = metadata;
+            this.decription = decription;
+            this.thumbImage = null;
+        }
+
+        public Options(String label, String metadata, String decription, String thumbImage) {
+            super();
+            this.label = label;
+            this.metadata = metadata;
+            this.decription = decription;
+            this.thumbImage = thumbImage;
         }
 
         public String getLabel() {
@@ -36,6 +56,14 @@ public interface QuickReply extends Serializable {
 
         public String getMetadata() {
             return metadata;
+        }
+
+        public String getDecription() {
+            return decription;
+        }
+
+        public String getThumbImage() {
+            return thumbImage;
         }
 
     } // Options
@@ -79,6 +107,10 @@ public interface QuickReply extends Serializable {
     public void setType(String type);
 
     public void addOption(String label, String metadata);
+
+    public void addOption(String label, String metadata, String decription);
+
+    public void addOption(String label, String metadata, String decription, String thumbImage);
 
     public void withTextInput(String label, String metadata, KeyboardType keyboard);
 

@@ -239,6 +239,9 @@ public class DirectMessageV2JSONImpl extends TwitterResponseImpl implements Dire
                         jsonWriter.object();
                         jsonWriter.key("label").value(opt.getLabel());
                         jsonWriter.key("metadata").value(opt.getMetadata());
+                        if (opt.getDecription() != null) {
+                            jsonWriter.key("description").value(opt.getDecription());
+                        }
                         jsonWriter.endObject();
                     }
                     jsonWriter.endArray();
